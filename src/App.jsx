@@ -3,7 +3,7 @@ import './App.css'
 import Nearest from './layout/Nearest'
 import axios from 'axios';
 import { BrowserRouter, Routes, Route } from "react-router-dom"
-import {React,useState,useEffect} from 'react'
+import {React,useState,useEffect, useRef} from 'react'
 import Navbar from './basic/atoms/Navbar';
 import Paginate from './basic/molecules/Paginate';
 import Upcoming from './layout/Upcoming';
@@ -21,6 +21,7 @@ function App() {
   const toggle=()=>{
     setOpen(!open);
   }
+  const didMount = useRef(false);
 
  
 
@@ -28,7 +29,7 @@ function App() {
   const getItems=()=>{
     axios.get('https://assessment.api.vweb.app/rides').then((response)=>{
       var userd= Object.keys(user)==0 ? 0 : user.station_code
-      console.log(user)
+      console.log(userd)
         const rides=response.data && response.data.map(ride=>{
           var minDistance=Infinity;
          
@@ -67,18 +68,21 @@ function App() {
     const response= await axios.get('https://assessment.api.vweb.app/user')
     
     const users=await response.data;
-    setUser(users,getItems());
-   //console.log(user)
+   await setUser(users,(user)=>{getItems();return user;});
+   //setUser(user => {getItems();return user;});
     console.log(users)
     
 
 }
   
   
-  
-  
+  useEffect(()=>  getUser(),[])
+
   useEffect(()=>{ 
-      getUser()  },[]);
+    if ( !didMount.current ) {
+      return didMount.current = true;
+    }
+      getItems()  },[user]);
    
   return (
     <div className="App bg-[#303632] h-screen">
